@@ -1,0 +1,176 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "PipelineRole": {
+       "Type": "AWS::IAM::Role",
+       "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Effect": "Allow",
+              "Principal": {
+                "Service": ["codepipeline.amazonaws.com"]
+              },
+              "Action": ["sts:AssumeRole"]
+            }]
+          },
+          "ManagedPolicyArns": ["arn:aws:iam::aws:policy/AdministratorAccess"]
+       }
+    },
+    "DeployLambdaRole": {
+       "Type": "AWS::IAM::Role",
+       "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Effect": "Allow",
+              "Principal": {
+                "Service": ["lambda.amazonaws.com"]
+              },
+              "Action": ["sts:AssumeRole"]
+            }]
+          },
+          "ManagedPolicyArns": ["arn:aws:iam::aws:policy/AdministratorAccess"]
+       }
+    },
+    "ArtifactStore": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+
+      }
+    },
+    "DeployLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "ZipFile": {"Fn::Join": ["", [
+            "var AWS = require('aws-sdk');",
+            "var codepipeline = new AWS.CodePipeline();",
+            "var cfn = new AWS.CloudFormation();",
+            "  function done(jobId, context, data) {",
+            "    console.log('done', data);",
+            "    codepipeline.putJobSuccessResult({jobId: jobId}, function(err) {",
+            "      if(err) {",
+            "        context.fail(err);",
+            "      } else {",
+            "        context.succeed(data);",
+            "      }",
+            "    });",
+            "  }",
+            "  function fail(jobId, context, err) {",
+            "    console.log('fail', err);",
+            "    codepipeline.putJobFailureResult({",
+            "      jobId: jobId,",
+            "      failureDetails: {",
+            "          message: JSON.stringify(err.message),",
+            "          type: 'JobFailed',",
+            "          externalExecutionId: context.invokeid",
+            "      }",
+            "    }, function(err) {",
+            "      if(err) {",
+            "        context.fail(err);",
+            "      } else {",
+            "        context.succeed({});",
+            "      }",
+            "    });",
+            "  }",
+            "exports.handler = function(event, context) {",
+            "  console.log(JSON.stringify(event));",
+            "  var jobId = event['CodePipeline.job'].id;",
+            "  cfn.describeStacks({StackName: 'service'}, function(err, data) {",
+            "    if (err) {",
+            "      if (err.message === 'Stack with id service does not exist') {",
+            "        cfn.createStack({StackName: 'service', Capabilities: ['CAPABILITY_IAM']}, function(err, data) {",
+
+            "        });",
+            "      } else {"
+            "        fail(jobId, context, err);",
+            "      }",
+            "    } else {",
+            "      done(jobId, context, data);",
+            "    }",
+            "  })",
+            "};"
+          ]]}
+        },
+        "Handler": "index.handler",
+        "MemorySize": 128,
+        "Role": {"Fn::GetAtt": ["DeployLambdaRole", "Arn"]},
+        "Runtime": "nodejs",
+        "Timeout": 60
+      }
+    },
+    "Pipeline": {
+      "Type": "AWS::CodePipeline::Pipeline",
+      "Properties": {
+        "Name": "devopscon",
+        "RoleArn": {"Fn::GetAtt": ["PipelineRole", "Arn"]},
+        "ArtifactStore": {
+          "Type": "S3",
+          "Location": {"Ref": "ArtifactStore"}
+        },
+        "Stages": [{
+          "Name": "Source",
+          "Actions": [{
+            "Name": "SourceAction",
+            "ActionTypeId": {
+              "Category": "Source",
+              "Owner": "AWS",
+              "Version": "1",
+              "Provider": "CodeCommit"
+            },
+            "OutputArtifacts": [{
+              "Name": "SourceOutput"
+            }],
+            "Configuration": {
+              "RepositoryName": "devopscon",
+              "BranchName": "master"
+            },
+            "RunOrder": 1
+          }]
+        }, {
+          "Name": "Test-Bundle",
+          "Actions": [{
+            "Name": "Test-BundleAction",
+            "ActionTypeId": {
+              "Category": "Build",
+              "Owner": "ThirdParty",
+              "Version": "1",
+              "Provider": "SolanoCI"
+            },
+            "InputArtifacts": [{
+              "Name": "SourceOutput"
+            }],
+            "OutputArtifacts": [{
+              "Name": "BundleOutput"
+            }],
+            "Configuration": {
+              "SuiteId": "460332",
+              "ClientId": "e7c78b64-17c8-4f9b-a0ac-790414db012a",
+              "ClientToken": "XXX"
+            },
+            "RunOrder": 1
+          }]
+        }, {
+          "Name": "Deploy",
+          "Actions": [{
+            "Name": "DeployAction",
+            "ActionTypeId": {
+              "Category": "Invoke",
+              "Owner": "AWS",
+              "Version": "1",
+              "Provider": "Lambda"
+            },
+            "InputArtifacts": [{
+              "Name": "BundleOutput"
+            }],
+            "Configuration": {
+              "FunctionName": {"Ref": "DeployLambda"}
+            },
+            "RunOrder": 1
+          }]
+        }]
+      }
+    }
+  }
+}
