@@ -1,5 +1,4 @@
 tests:
-  - make npm-dev
-  - make test
+  - make npm-dev && make test
 hooks:
   post_build: make npm
