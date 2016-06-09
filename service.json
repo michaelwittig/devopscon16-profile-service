@@ -73,7 +73,7 @@
           "      \"type\": \"string\"\n",
           "    },\n",
           "    \"location\": {\n",
-          "      \"type\": \"object\"\n",
+          "      \"type\": \"object\",\n",
           "      \"additionalProperties\": false,\n",
           "      \"properties\": {\n",
           "        \"latitude\": {\n",
