@@ -38,6 +38,108 @@
         "Runtime": "nodejs4.3",
         "Timeout": 60
       }
-    }
+    },
+
+    "RestApi": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Name": "profile-service-api"
+      }
+    },
+    "RestApiDeployment": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "StageName": "v1"
+      },
+      "DependsOn": ["ProfileGet"]
+    },
+
+    "ProfileModel": {
+      "Type": "AWS::ApiGateway::Model",
+      "Properties": {
+        "ContentType": "application/json",
+        "Name": "Profile",
+        "RestApiId": {"Ref": "RestApi"},
+        "Schema": {"Fn::Join": ["", [
+          "{\n",
+          "  \"type\": \"object\",\n",
+          "  \"additionalProperties\": false,\n",
+          "  \"properties\": {\n",
+          "    \"id\": {\n",
+          "      \"type\": \"string\"\n",
+          "    },\n",
+          "    \"label\": {\n",
+          "      \"type\": \"string\"\n",
+          "    },\n",
+          "    \"location\": {\n",
+          "      \"type\": \"object\"\n",
+          "      \"additionalProperties\": false,\n",
+          "      \"properties\": {\n",
+          "        \"latitude\": {\n",
+          "          \"type\": \"number\"\n",
+          "        },\n",
+          "        \"longitude\": {\n",
+          "          \"type\": \"number\"\n",
+          "        }\n",
+          "      },\n",
+          "      \"required\": [\"latitude\", \"longitude\"]\n",
+          "    }\n",
+          "  },\n",
+          "  \"required\": [\"id\", \"label\"]\n",
+          "}\n"
+        ]]}
+      }
+    },
+
+    "ProfilesResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ParentId": {"Fn::GetAtt": ["RestApi", "RootResourceId"]},
+        "PathPart": "profile"
+      }
+    },
+    "ProfileResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ParentId": {"Ref": "ProfilesResource"},
+        "PathPart": "{id}"
+      }
+    },
+
+    "ProfileGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "GET",
+        "Integration": {
+          "Type": "AWS",
+          "IntegrationHttpMethod": "POST",
+          "Uri": {"Fn::Join" : ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["Lambda", "Arn"]}, "/invocations"]]},
+          "IntegrationResponses": [{
+            "ResponseTemplates": {
+              "application/json": "$input.json('$.body')"
+            },
+            "StatusCode": 200
+          }],
+          "RequestTemplates": {
+            "application/json": "{\"id\": \"$input.params('id')\"}}"
+          }
+        },
+        "RequestParameters": {
+          "method.request.path.id": true
+        },
+        "ResourceId": {"Ref": "ProfileResource"},
+        "RestApiId": {"Ref": "RestApi"},
+        "MethodResponses": [{
+          "ResponseModels": {
+            "application/json": {"Ref": "ProfileModel"}
+          },
+          "StatusCode": 200
+        }]
+      }
+    },
   }
 }
