@@ -1,5 +1,13 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "RepositoryName": {
+      "Type": "String"
+    },
+    "ServiceName": {
+      "Type": "String"
+    }
+  },
   "Resources": {
     "PipelineRole": {
        "Type": "AWS::IAM::Role",
@@ -36,7 +44,6 @@
     "ArtifactStore": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-
       }
     },
     "DeployLambda": {
@@ -169,7 +176,7 @@
     "Pipeline": {
       "Type": "AWS::CodePipeline::Pipeline",
       "Properties": {
-        "Name": "devopscon",
+        "Name": {"Ref": "ServiceName"},
         "RoleArn": {"Fn::GetAtt": ["PipelineRole", "Arn"]},
         "ArtifactStore": {
           "Type": "S3",
@@ -193,7 +200,7 @@
               "Name": "SourceOutput"
             }],
             "Configuration": {
-              "RepositoryName": "devopscon",
+              "RepositoryName": {"Ref": "RepositoryName"},
               "BranchName": "master"
             },
             "RunOrder": 1
