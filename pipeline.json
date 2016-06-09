@@ -156,10 +156,10 @@
 "    )","\n",
 "    s3Client.download_file(s3Location['bucketName'], s3Location['objectKey'], '/tmp/artifact.zip')","\n",
 "    extractTemplate('/tmp/artifact.zip', 'service.json', '/tmp/')","\n",
-"    if existsStack('service'):","\n",
-"      updateStack('service', '/tmp/service.json', s3Location)","\n",
+"    if existsStack('", {"Ref": "ServiceName"}, "'):","\n",
+"      updateStack('", {"Ref": "ServiceName"}, "', '/tmp/service.json', s3Location)","\n",
 "    else:","\n",
-"      createStack('service', '/tmp/service.json', s3Location)","\n",
+"      createStack('", {"Ref": "ServiceName"}, "', '/tmp/service.json', s3Location)","\n",
 "    jobDone(jobId, context, 'done')","\n",
 "  except Exception as e:","\n",
 "    jobFailed(jobId, context, str(e))","\n",
@@ -176,7 +176,7 @@
     "Pipeline": {
       "Type": "AWS::CodePipeline::Pipeline",
       "Properties": {
-        "Name": {"Ref": "ServiceName"},
+        "Name": {"Fn::Join": ["", [{"Ref": "ServiceName"}, "-pipeline"]]},
         "RoleArn": {"Fn::GetAtt": ["PipelineRole", "Arn"]},
         "ArtifactStore": {
           "Type": "S3",
