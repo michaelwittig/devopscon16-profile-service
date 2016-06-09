@@ -108,6 +108,9 @@
 "    ],","\n",
 "    Capabilities=['CAPABILITY_IAM']","\n",
 "  )","\n",
+"  cfnClient.get_waiter('stack_update_complete').wait(","\n",
+"    StackName=stackName,","\n",
+"  )","\n",
 "","\n",
 "def createStack(stackName, templateFile, s3Location):","\n",
 "  cfnClient = boto3.client('cloudformation')","\n",
@@ -126,6 +129,9 @@
 "    ],","\n",
 "    Capabilities=['CAPABILITY_IAM']","\n",
 "  )","\n",
+"  cfnClient.get_waiter('stack_create_complete').wait(","\n",
+"    StackName=stackName,","\n",
+"  )","\n",
 "","\n",
 "def handler(event, context):","\n",
 "  jobId = event['CodePipeline.job']['id']","\n",
@@ -139,6 +145,7 @@
 "      aws_access_key_id=artifactCredentials['accessKeyId'],","\n",
 "      aws_secret_access_key=artifactCredentials['secretAccessKey'],","\n",
 "      aws_session_token=artifactCredentials['sessionToken'],","\n",
+"      config=botocore.client.Config(signature_version='s3v4'),","\n",
 "    )","\n",
 "    s3Client.download_file(s3Location['bucketName'], s3Location['objectKey'], '/tmp/artifact.zip')","\n",
 "    extractTemplate('/tmp/artifact.zip', 'service.json', '/tmp/')","\n",
@@ -146,10 +153,10 @@
 "      updateStack('service', '/tmp/service.json', s3Location)","\n",
 "    else:","\n",
 "      createStack('service', '/tmp/service.json', s3Location)","\n",
+"    jobDone(jobId, context, 'done')","\n",
 "  except Exception as e:","\n",
 "    jobFailed(jobId, context, str(e))","\n",
-"  return {}","\n",
-
+"  return {}","\n"
           ]]}
         },
         "Handler": "index.handler",
@@ -168,6 +175,10 @@
           "Type": "S3",
           "Location": {"Ref": "ArtifactStore"}
         },
+        "DisableInboundStageTransitions": [{
+          "Reason": "Manual interaction needed",
+          "StageName": "Test-Bundle"
+        }],
         "Stages": [{
           "Name": "Source",
           "Actions": [{
