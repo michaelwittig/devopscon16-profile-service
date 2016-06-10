@@ -179,6 +179,9 @@
               "application/json": "$input.json('$.body')"
             },
             "StatusCode": 200
+          }, {
+            "SelectionPattern": "^ServiceErrorNotFound.*",
+            "StatusCode": 404
           }],
           "RequestTemplates": {
             "application/json": "{\"id\": \"$input.params('id')\"}}"
@@ -194,6 +197,8 @@
             "application/json": {"Ref": "ProfileModel"}
           },
           "StatusCode": 200
+        }, {
+          "StatusCode": 404
         }]
       }
     }

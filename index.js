@@ -18,9 +18,7 @@ exports.handler = function(event, context, cb) {
       cb(err);
     } else {
       if (data.Item === undefined) {
-        cb(null, {
-          "status": 404
-        });
+        cb(new Error("ServiceErrorNotFound"));
       } else {
         console.log(JSON.stringify(data.Item));
         cb(null, {
