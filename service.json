@@ -184,7 +184,7 @@
             "StatusCode": 404
           }],
           "RequestTemplates": {
-            "application/json": "{\"id\": \"$input.params('id')\"}}"
+            "application/json": "{\"id\": \"$input.params('id')\"}"
           }
         },
         "RequestParameters": {
