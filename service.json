@@ -181,6 +181,9 @@
             "StatusCode": 200
           }, {
             "SelectionPattern": "^ServiceErrorNotFound$",
+            "ResponseTemplates": {
+              "application/json": "{}"
+            },
             "StatusCode": 404
           }],
           "RequestTemplates": {
