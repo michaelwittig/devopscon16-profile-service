@@ -122,12 +122,12 @@
         "StageName": "v1",
         "StageDescription": {
           "StageName": "v1",
-          "MethodSettings": {
+          "MethodSettings": [{
             "DataTraceEnabled": true,
             "HttpMethod": "*",
             "LoggingLevel": "INFO",
             "ResourcePath": "/*"
-          }
+          }]
         }
       },
       "DependsOn": ["ProfileGet"]
