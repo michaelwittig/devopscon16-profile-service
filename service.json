@@ -154,6 +154,24 @@
       },
       "DependsOn": ["ProfileGet"]
     },
+    "RestApi5XXErrorsAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmActions": [{"Ref": "AlertTopicArn"}],
+        "OKActions": [{"Ref": "AlertTopicArn"}],
+        "MetricName": "5XXError",
+        "Namespace": "ApiGateway",
+        "Statistic": "Sum",
+        "Period": 60,
+        "EvaluationPeriods": 1,
+        "Threshold": 1,
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": [{
+          "Name": "ApiName",
+          "Value": "profile-service-api"
+        }]
+      }
+    },
 
     "ProfileModel": {
       "Type": "AWS::ApiGateway::Model",
