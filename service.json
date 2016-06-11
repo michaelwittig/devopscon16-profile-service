@@ -105,7 +105,6 @@
           "MetricNamespace": "profile-service"
         }]
       }
-
     },
     "ProfileTable": {
       "Type": "AWS::DynamoDB::Table",
@@ -123,6 +122,42 @@
           "WriteCapacityUnits": 1
         },
         "TableName": "profile"
+      }
+    },
+    "ProfileTableReadThrottleEventsAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "Namespace": "AWS/DynamoDB",
+        "MetricName": "ReadThrottleEvents",
+        "Dimensions": [{
+          "Name": "TableName",
+          "Value": {"Ref": "ProfileTable"}
+        }],
+        "Statistic": "Sum",
+        "Period": "60",
+        "EvaluationPeriods": "1",
+        "Threshold": "1",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "AlarmActions": [{"Ref": "AlertTopicArn"}],
+        "OKActions": [{"Ref": "AlertTopicArn"}]
+      }
+    },
+    "ProfileTableWriteThrottleEventsAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "Namespace": "AWS/DynamoDB",
+        "MetricName": "WriteThrottleEvents",
+        "Dimensions": [{
+          "Name": "TableName",
+          "Value": {"Ref": "ProfileTable"}
+        }],
+        "Statistic": "Sum",
+        "Period": "60",
+        "EvaluationPeriods": "1",
+        "Threshold": "1",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "AlarmActions": [{"Ref": "AlertTopicArn"}],
+        "OKActions": [{"Ref": "AlertTopicArn"}]
       }
     },
 
