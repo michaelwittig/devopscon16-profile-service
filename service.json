@@ -106,6 +106,20 @@
         }]
       }
     },
+    "LambdaLogMonitoringAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmActions": [{"Ref": "AlertTopicArn"}],
+        "OKActions": [{"Ref": "AlertTopicArn"}],
+        "MetricName": "UnhandledErrorCount",
+        "Namespace": "profile-service",
+        "Statistic": "Sum",
+        "Period": 60,
+        "EvaluationPeriods": 1,
+        "Threshold": 1,
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold"
+      }
+    },
     "ProfileTable": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
