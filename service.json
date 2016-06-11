@@ -9,7 +9,7 @@
     },
     "LocationLambdaArn": {
       "Type": "String",
-      "Default": "arn:aws:lambda:us-east-1:878533158213:function:location-service-Lambda-1QIYDKWI9CFEK"
+      "Default": "arn:aws:lambda:us-east-1:878533158213:function:location-service-Lambda-175N76PDSYOPM"
     }
   },
   "Resources": {
@@ -115,20 +115,25 @@
         "Name": "profile-service-api"
       }
     },
+    "RestApiStage": {
+      "Type": "AWS::ApiGateway::Stage",
+      "Properties": {
+        "DeploymentId": {"Ref": "RestApiDeployment"},
+        "MethodSettings": [{
+          "DataTraceEnabled": true,
+          "HttpMethod": "*",
+          "LoggingLevel": "INFO",
+          "ResourcePath": "/*"
+        }],
+        "RestApiId": {"Ref": "RestApi"},
+        "StageName": "v1"
+      }
+    },
     "RestApiDeployment": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {"Ref": "RestApi"},
-        "StageName": "v1",
-        "StageDescription": {
-          "StageName": "v1",
-          "MethodSettings": [{
-            "DataTraceEnabled": true,
-            "HttpMethod": "*",
-            "LoggingLevel": "INFO",
-            "ResourcePath": "/*"
-          }]
-        }
+        "StageName": "cfn"
       },
       "DependsOn": ["ProfileGet"]
     },
