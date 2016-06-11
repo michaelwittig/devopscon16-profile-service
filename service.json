@@ -10,6 +10,10 @@
     "LocationLambdaArn": {
       "Type": "String",
       "Default": "arn:aws:lambda:us-east-1:878533158213:function:location-service-Lambda-175N76PDSYOPM"
+    },
+    "AlertTopicArn": {
+      "Type": "String",
+      "Default": "arn:aws:sns:us-east-1:878533158213:alert"
     }
   },
   "Resources": {

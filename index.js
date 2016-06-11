@@ -29,10 +29,10 @@ exports.handler = function(event, context, cb) {
           if (err) {
             cb(err);
           } else {
+            console.log(JSON.stringify(data));
             if (data.Item === undefined) {
               cb(new Error("ServiceErrorNotFound"));
             } else {
-              console.log(JSON.stringify(data.Item));
               cb(null, {
                 "status": 200,
                 "body": {
