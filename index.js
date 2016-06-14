@@ -7,7 +7,6 @@ var lambda = new AWS.Lambda();
 
 exports.handler = function(event, context, cb) {
   console.log(JSON.stringify(event));
-  
   dynamodb.getItem({
     "Key": {
       "id": {
@@ -15,30 +14,29 @@ exports.handler = function(event, context, cb) {
       }
     },
     "TableName": "profile"
-  }, function(err, data) {
+  }, function(err, data1) {
     if (err) {
       cb(err);
     } else {
-      console.log(JSON.stringify(data));
-      if (data.Item === undefined) {
+      console.log(JSON.stringify(data1));
+      if (data1.Item === undefined) {
         cb(new Error("[NotFound] Profile not found"));
       } else {
         lambda.invoke({
           "FunctionName": config.LocationLambdaArn,
           "InvocationType": "RequestResponse",
           "Payload": JSON.stringify({"id": event.id, "action": "get"})
-        }, function(err, data) {
+        }, function(err, data2) {
           if (err) {
             cb(err);
           } else {
-            console.log(JSON.stringify(data));
-            if (data.FunctionError === undefined) {
-              var location = JSON.parse(data.Payload);
+            console.log(JSON.stringify(data2));
+            if (data2.FunctionError === undefined) {
+              var location = JSON.parse(data2.Payload);
               cb(null, {
-                "status": 200,
                 "body": {
-                  "id": data.Item.id.S,
-                  "label": data.Item.label.S,
+                  "id": data1.Item.id.S,
+                  "label": data1.Item.label.S,
                   "location": {
                     "latitude": location.body.latitude,
                     "longitude": location.body.longitude
@@ -46,7 +44,7 @@ exports.handler = function(event, context, cb) {
                 }
               });
             } else {
-              cb(new Error("[InternalServerError] " + data.FunctionError + ": " + data.Payload));
+              cb(new Error("[InternalServerError] " + data2.FunctionError + ": " + data2.Payload));
             }
           }
         });
