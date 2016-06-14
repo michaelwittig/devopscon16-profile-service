@@ -261,13 +261,13 @@
             },
             "StatusCode": 200
           }, {
-            "SelectionPattern": "^\[NotFound\].*",
+            "SelectionPattern": "^\\[NotFound\\].*",
             "ResponseTemplates": {
               "application/json": "{}"
             },
             "StatusCode": 404
           }, {
-            "SelectionPattern": "^\[InternalServerError\].*",
+            "SelectionPattern": "^\\[InternalServerError\\].*",
             "ResponseTemplates": {
               "application/json": "{}"
             },
