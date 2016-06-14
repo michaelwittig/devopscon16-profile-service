@@ -25,3 +25,8 @@ mocha:
 test: jshint mocha
 	@echo "test"
 	@echo
+
+deploy:
+	@echo "deploy"
+	@rm -rf deploy.zip
+	@zip deploy.zip deploy.py
